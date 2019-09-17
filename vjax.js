@@ -104,7 +104,7 @@
             if (container != options.modal) {
               var scroll = $(context).scrollTop();
 
-              $(context).find(container).replaceWith(view);
+              $(context).find(container).html(view);
               options.reloadScript();
               $(context).scrollTop(scroll);
             }
