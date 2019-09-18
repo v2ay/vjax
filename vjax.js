@@ -76,7 +76,9 @@
               container = options.container;
             } else {
               // Find container
-              for (var optionContainer in options.container) {
+              for (var i in options.container) {
+				var optionContainer = options.container[i];
+				
                 if (optionContainer.code == response.code) {
                   container = optionContainer.id;
 
