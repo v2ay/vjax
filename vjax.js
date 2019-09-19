@@ -96,7 +96,7 @@
             if (container == options.modal) {
               context = $(options.modal);
 
-              $(context).find('.modal-content').find('.modal-body').html(view);
+              $(context).html(view);
               $(context).modal('show');
 
               options.reloadScript();
