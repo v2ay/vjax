@@ -128,7 +128,7 @@
     }
   };
 
-  $.fn.vjax = function(options) {
+  $.vjax = function(options) {
     return this.each(function() {
       try {
         var that = $(this);
