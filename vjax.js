@@ -134,7 +134,6 @@
         var that = $(this);
 
         var plugin = new Plugin(options);
-        that.data(that, plugin);
 
         plugin.init(that);
       } catch(e) {
