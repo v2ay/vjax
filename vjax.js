@@ -104,6 +104,8 @@
 
             // Container not modal
             if (container != options.modal) {
+              context = $(document);
+
               var scroll = $(context).scrollTop();
 
               $(context).find(container).html(view);
