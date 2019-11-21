@@ -14,8 +14,8 @@
 
     var options = $.extend(true, defaultOptions, options || {})
 
-    var virtualFormData = function(selector, context) {
-      var objects = $(context).find(selector);
+    var virtualFormData = function(selector) {
+      var objects = $(document).find(selector);
       var datas = new Array();
 
       objects.each(function() {
@@ -37,13 +37,7 @@
 
     var ajaxPushState = function(that) {
       var isModal = false;
-      var context = $(document);
       var formData = options.data;
-
-      // If modal already opened, get modal context
-      if (that.closest(options.modal).attr('id')) {
-        context = $(options.modal);
-      }
 
       if (!isModal) {
         if (options.replaceUrl) {
@@ -59,7 +53,7 @@
 
       // Form data serialize Accept(id, class, attribute)
       if ((/^\.|\[|#/).test(formData)) {
-        formData = virtualFormData(formData, context);
+        formData = virtualFormData(formData);
       }
 
       $.ajax({
@@ -77,7 +71,7 @@
             } else {
               // Find container
               for (var i in options.container) {
-				var optionContainer = options.container[i];
+                var optionContainer = options.container[i];
 				
                 if (optionContainer.code == response.code) {
                   container = optionContainer.id;
@@ -94,7 +88,7 @@
 
             // Container is modal
             if (container == options.modal) {
-              context = $(options.modal);
+              var context = $(options.modal);
 
               $(context).html(view);
               $(context).modal('show');
@@ -104,7 +98,7 @@
 
             // Container not modal
             if (container != options.modal) {
-              context = $(document);
+              var context = $(document);
 
               var scroll = $(context).scrollTop();
 
