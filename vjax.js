@@ -1,140 +1,148 @@
 (function($) {
-  Plugin = function(options) {
-    var defaultOptions = {
-      url: null,
-      method: 'get',
-      data: null,
-      container: null,
-      replaceUrl: false,
-      historyPush: false,
-      reloadScript: function(){},
-      complete: function(){},
-      modal: '#modal'
-    }
-
-    var options = $.extend(true, defaultOptions, options || {})
-
-    var virtualFormData = function(selector) {
-      var objects = $(document).find(selector);
-      var datas = new Array();
-
-      objects.each(function() {
-        var that = $(this);
-
-        if (that.prop('nodeName') == 'OPTION') {
-          that = that.parent();
+    Plugin = function(options) {
+        var defaultOptions = {
+            url: null,
+            method: 'get',
+            data: null,
+            container: null,
+            replaceUrl: false,
+            historyPush: false,
+            reloadScript: function(){},
+            complete: function(){},
+            modal: '#modal'
         }
 
-        var serial = that.serialize();
+        var options = $.extend(true, defaultOptions, options || {})
 
-        if (serial) {
-          datas.push(serial);
-        }
-      });
+        var virtualFormData = function(params) {
+            var datas = new Array();
 
-      return datas.join('&');
-    }
+            for (var i in params) {
+                var param = params[i];
+                
+                if (typeof param == "string") {
+                    var objects = $(document).find(param);
 
-    var ajaxPushState = function(that) {
-      var isModal = false;
-      var formData = options.data;
+                    objects.each(function() {
+                        var that = $(this);
 
-      if (!isModal) {
-        if (options.replaceUrl) {
-          // Replace State url
-          window.History.replaceState(null, null, options.url);
-        }
+                        if (that.prop('nodeName') == 'OPTION') {
+                            that = that.parent();
+                        }
 
-        if (options.historyPush) {
-          // Push State history
-          window.History.pushState(null, null, options.url);
-        }
-      }
+                        var serial = that.serialize();
 
-      // Form data serialize Accept(id, class, attribute)
-      if ((/^\.|\[|#/).test(formData)) {
-        formData = virtualFormData(formData);
-      }
-
-      $.ajax({
-        url: options.url || window.location.pathname,
-        method: options.method,
-        dataType: 'json',
-        data: formData,
-        beforeSend: function () {},
-        success: function (response, status, xhr) {
-          var container = null;
-
-          if (options.container) {
-            if (typeof options.container == "string") {
-              container = options.container;
-            } else {
-              // Find container
-              for (var i in options.container) {
-                var optionContainer = options.container[i];
-				
-                if (optionContainer.code == response.code) {
-                  container = optionContainer.id;
-
-                  break;
+                        if (serial) {
+                            datas.push(serial);
+                        }
+                    });
                 }
-              }
-            }
-          }
 
-          // html response
-          if (response.type == 'html' && response.content && container) {
-            var view = response.content;
-
-            // Container is modal
-            if (container == options.modal) {
-              var context = $(options.modal);
-
-              $(context).html(view);
-              $(context).modal('show');
-
-              options.reloadScript();
+                if (typeof param == "object") {
+                    for (k in param) {
+                        datas.push(k + "=" + param[k]);
+                    }
+                }
             }
 
-            // Container not modal
-            if (container != options.modal) {
-              var context = $(document);
+          return datas.join('&');
+        }
 
-              var scroll = $(context).scrollTop();
+      var ajaxPushState = function(that) {
+            var isModal = false;
+            var formData = virtualFormData(options.data); // Form data serialize Accept(id, class, attribute)
 
-              $(context).find(container).html(view);
-              options.reloadScript();
-              $(context).scrollTop(scroll);
+            if (!isModal) {
+                if (options.replaceUrl) {
+                    // Replace State url
+                    window.History.replaceState(null, null, options.url);
+                }
+
+                if (options.historyPush) {
+                    // Push State history
+                    window.History.pushState(null, null, options.url);
+                }
             }
 
-            // complete callback
-            options.complete();
-          }
+            $.ajax({
+                url: options.url || window.location.pathname,
+                method: options.method,
+                dataType: 'json',
+                data: formData,
+                beforeSend: function () {},
+                success: function (response, status, xhr) {
+                    var container = null;
 
-          if (response.type == 'redirect') {
-            window.location.href = response.content;
-          }
-        },
-        complete: function() {}
-      });
-    }
+                    if (options.container) {
+                        if (typeof options.container == "string") {
+                            container = options.container;
+                        } else {
+                        // Find container
+                        for (var i in options.container) {
+                                var optionContainer = options.container[i];
+                                
+                                if (optionContainer.code == response.code) {
+                                container = optionContainer.id;
 
-    this.init = function(that) {
-      ajaxPushState(that);
-    }
-  };
+                                break;
+                                }
+                            }
+                        }
+                    }
 
-  $.fn.vjax = function(options) {
-    return this.each(function() {
-      try {
-        var that = $(this);
+                    // html response
+                    if (response.type == 'html' && response.content && container) {
+                        var view = response.content;
 
-        var plugin = new Plugin(options);
+                        // Container is modal
+                        if (container == options.modal) {
+                            var context = $(options.modal);
 
-        plugin.init(that);
-      } catch(e) {
-        alert(e + ' at line ' + e.lineNumber);
-      }
-    });
-  };
+                            $(context).html(view);
+                            $(context).modal('show');
+
+                            options.reloadScript();
+                        }
+
+                        // Container not modal
+                        if (container != options.modal) {
+                            var context = $(document);
+
+                            var scroll = $(context).scrollTop();
+
+                            $(context).find(container).html(view);
+                            options.reloadScript();
+                            $(context).scrollTop(scroll);
+                        }
+
+                        // complete callback
+                        options.complete();
+                    }
+
+                    if (response.type == 'redirect') {
+                        window.location.href = response.content;
+                    }
+                },
+                complete: function() {}
+            });
+        }
+
+        this.init = function(that) {
+            ajaxPushState(that);
+        }
+    };
+
+    $.fn.vjax = function(options) {
+        return this.each(function() {
+            try {
+                var that = $(this);
+
+                var plugin = new Plugin(options);
+
+                plugin.init(that);
+            } catch(e) {
+                alert(e + ' at line ' + e.lineNumber);
+            }
+        });
+    };
 })(jQuery);
