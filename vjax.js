@@ -106,7 +106,7 @@
                         }
                     }
 
-                    // html response
+                    // HTML response
                     if (response.type == 'html' && response.content && container) {
                         var view = response.content;
 
