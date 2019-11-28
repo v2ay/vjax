@@ -17,31 +17,46 @@
         var virtualFormData = function(params) {
             var datas = new Array();
 
+            if (Array.isArray(params) == false) {
+                params = [params];
+            }
+
             for (var i in params) {
                 var param = params[i];
                 
-                // Form data serialize Accept(id, class, attribute)
-                if ((/^\.|\[|#/).test(param)) {
-                    var objects = $(document).find(param);
+                if (param && typeof param == "string") {
+                    // id, class, attribute
+                    if ((/^\.|\[|#/).test(param)) {
+                        var objects = $(document).find(param);
 
-                    objects.each(function() {
-                        var that = $(this);
+                        objects.each(function() {
+                            var that = $(this);
 
-                        if (that.prop('nodeName') == 'OPTION') {
-                            that = that.parent();
-                        }
+                            if (that.prop('nodeName') == 'OPTION') {
+                                that = that.parent();
+                            }
 
-                        var serial = that.serialize();
+                            var serial = that.serialize();
 
-                        if (serial) {
-                            datas.push(serial);
-                        }
-                    });
+                            if (serial) {
+                                datas.push(serial);
+                            }
+                        });
+                    } else {
+                        // serial
+                        datas.push(param);
+                    }
                 }
 
-                if (typeof param == "object") {
-                    for (k in param) {
-                        datas.push(k + "=" + param[k]);
+                // object json or dom object
+                if (param && typeof param == "object") {
+                    if (param.closest(document)) {
+                        serial = param.serialize()
+                        datas.push(serial);
+                    } else {
+                        for (k in param) {
+                            datas.push(k + "=" + param[k]);
+                        }
                     }
                 }
             }
