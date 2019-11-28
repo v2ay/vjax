@@ -20,7 +20,8 @@
             for (var i in params) {
                 var param = params[i];
                 
-                if (typeof param == "string") {
+                // Form data serialize Accept(id, class, attribute)
+                if ((/^\.|\[|#/).test(param)) {
                     var objects = $(document).find(param);
 
                     objects.each(function() {
@@ -45,10 +46,10 @@
                 }
             }
 
-          return datas.join('&');
+            return datas.join('&');
         }
 
-      var ajaxPushState = function(that) {
+        var ajaxPushState = function(that) {
             var isModal = false;
             var formData = virtualFormData(options.data); // Form data serialize Accept(id, class, attribute)
 
