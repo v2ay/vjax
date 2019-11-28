@@ -50,7 +50,7 @@
 
                 // object json or dom object
                 if (param && typeof param == "object") {
-                    if (param.closest(document)) {
+                    if (param instanceof jQuery) {
                         serial = param.serialize()
                         datas.push(serial);
                     } else {
