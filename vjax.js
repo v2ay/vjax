@@ -88,6 +88,7 @@
                 beforeSend: function () {},
                 success: function (response, status, xhr) {
                     var container = null;
+                    var containerAppend = false;
 
                     if (options.container) {
                         if (typeof options.container == "string") {
@@ -98,9 +99,10 @@
                                 var optionContainer = options.container[i];
                                 
                                 if (optionContainer.code == response.code) {
-                                container = optionContainer.id;
+                                    container = optionContainer.id;
+                                    containerAppend = optionContainer.append;
 
-                                break;
+                                    break;
                                 }
                             }
                         }
@@ -114,7 +116,12 @@
                         if (container == options.modal) {
                             var context = $(options.modal);
 
-                            $(context).html(view);
+                            if (containerAppend == true) {
+                                $(context).append(view);
+                            } else {
+                                $(context).html(view);
+                            }
+                            
                             $(context).modal('show');
 
                             options.reloadScript();
@@ -126,7 +133,12 @@
 
                             var scroll = $(context).scrollTop();
 
-                            $(context).find(container).html(view);
+                            if (containerAppend == true) {
+                                $(context).find(container).append(view);
+                            } else {
+                                $(context).find(container).html(view);
+                            }
+                            
                             options.reloadScript();
                             $(context).scrollTop(scroll);
                         }
