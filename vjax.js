@@ -23,7 +23,7 @@
 
             for (var i in params) {
                 var param = params[i];
-                
+
                 if (param && typeof param == "string") {
                     // id, class, attribute
                     if ((/^\.|\[|#/).test(param)) {
@@ -91,15 +91,15 @@
                     var containerAppend = false;
 
                     if (options.container) {
-                        if (typeof options.container == "string") {
-                            container = options.container;
+                        if (typeof options.container == "string" || options.container instanceof jQuery) {
+                            container = $(options.container);
                         } else {
-                        // Find container
-                        for (var i in options.container) {
+                            // Find container
+                            for (var i in options.container) {
                                 var optionContainer = options.container[i];
-                                
+
                                 if (optionContainer.code == response.code) {
-                                    container = optionContainer.id;
+                                    container = $(optionContainer.id);
                                     containerAppend = optionContainer.append;
 
                                     break;
@@ -113,7 +113,7 @@
                         var view = response.content;
 
                         // Container is modal
-                        if (container == options.modal) {
+                        if (container.is($(options.modal))) {
                             var context = $(options.modal);
 
                             if (containerAppend == true) {
@@ -121,14 +121,14 @@
                             } else {
                                 $(context).html(view);
                             }
-                            
+
                             $(context).modal('show');
 
                             options.reloadScript();
                         }
 
                         // Container not modal
-                        if (container != options.modal) {
+                        if (!container.is($(options.modal))) {
                             var context = $(document);
 
                             var scroll = $(context).scrollTop();
@@ -138,7 +138,7 @@
                             } else {
                                 $(context).find(container).html(view);
                             }
-                            
+
                             options.reloadScript();
                             $(context).scrollTop(scroll);
                         }
