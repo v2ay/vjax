@@ -144,8 +144,14 @@
                         }
                     }
 
+                    // REDIRECT response
                     if (response.type == 'redirect') {
                         window.location.href = response.content;
+                    }
+
+                    // ANY response
+                    if (!response.type || (response.type != 'html' && response.type != 'redirect')) {
+                        options.reloadScript(response, status, xhr);
                     }
 
                     // complete callback
