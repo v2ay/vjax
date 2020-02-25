@@ -142,14 +142,14 @@
                             options.reloadScript();
                             $(context).scrollTop(scroll);
                         }
-
-                        // complete callback
-                        options.complete();
                     }
 
                     if (response.type == 'redirect') {
                         window.location.href = response.content;
                     }
+
+                    // complete callback
+                    options.complete(response, status, xhr);
                 },
                 complete: function() {}
             });
