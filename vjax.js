@@ -4,6 +4,7 @@
             url: null,
             method: 'get',
             data: null,
+            csrf: null,
             container: null,
             replaceUrl: false,
             historyPush: false,
@@ -80,13 +81,43 @@
                 }
             }
 
+            var callbacks = new Array();
+
+            if (that.attr('data-ajax-callback')) {
+                callbacks = that.attr('data-ajax-callback').split(',');
+            }
+
+            // var xhrHttpRequest = new XMLHttpRequest();
+
+            var requestURL = options.url || window.location.pathname;
+            var requestPathname = parseUrl(requestURL).pathname;
+
             $.ajax({
-                url: options.url || window.location.pathname,
+                url: requestPathname,
                 method: options.method,
-                dataType: 'json',
                 data: formData,
-                beforeSend: function () {},
+                /*xhr: function() {
+                    return xhrHttpRequest;
+                },*/
+                beforeSend: function (xhr, settings) {
+                    if (options.csrf && settings.type == 'POST') {
+                        xhr.setRequestHeader("X-CSRF-Token", options.csrf);
+                    }
+                },
                 success: function (response, status, xhr) {
+                    /*
+                    // Force request redirect if request url and response url are differents
+                    var responseURL = xhrHttpRequest.responseURL;
+                    var responsePathname = parseUrl(responseURL).pathname;
+
+                    if (requestPathname != responsePathname) {
+                        window.location.href = responsePathname;
+                    } 
+
+                    console.log(responsePathname);
+                    console.log(requestPathname);
+                    */
+
                     var container = null;
                     var containerAppend = false;
 
@@ -108,57 +139,75 @@
                         }
                     }
 
-                    // HTML response
-                    if (response.type == 'html' && response.content && container) {
-                        var view = response.content;
+                    if (xhr.responseJSON) {
+                        // HTML response
+                        if (response.type == 'html' && container) {
+                            var view = response.content;
 
-                        // Container is modal
-                        if (container.is($(options.modal))) {
-                            var context = $(options.modal);
+                            // Container is modal
+                            if (container.is($(options.modal))) {
+                                var context = $(options.modal);
 
-                            if (containerAppend == true) {
-                                $(context).append(view);
-                            } else {
-                                $(context).html(view);
+                                if (containerAppend == true) {
+                                    $(context).append(view);
+                                } else {
+                                    $(context).html(view);
+                                }
+
+                                $(context).modal('show');
+
+                                options.reloadScript(response, status, xhr);
                             }
 
-                            $(context).modal('show');
+                            // Container not modal
+                            if (!container.is($(options.modal))) {
+                                var context = $(document);
 
-                            options.reloadScript();
+                                var scroll = $(context).scrollTop();
+
+                                if (containerAppend == true) {
+                                    $(context).find(container).append(view);
+                                } else {
+                                    $(context).find(container).html(view);
+                                }
+
+                                options.reloadScript(response, status, xhr);
+                                
+                                $(context).scrollTop(scroll);
+                            }
                         }
 
-                        // Container not modal
-                        if (!container.is($(options.modal))) {
-                            var context = $(document);
+                        // REDIRECT response
+                        if (response.type == 'redirect') {
+                            window.location.href = response.content;
+                        }
 
-                            var scroll = $(context).scrollTop();
-
-                            if (containerAppend == true) {
-                                $(context).find(container).append(view);
-                            } else {
-                                $(context).find(container).html(view);
-                            }
-
-                            options.reloadScript();
-                            $(context).scrollTop(scroll);
+                        // ANY response
+                        if (!response.type || (response.type != 'html' && response.type != 'redirect')) {
+                            options.reloadScript(response, status, xhr);
                         }
                     }
 
-                    // REDIRECT response
-                    if (response.type == 'redirect') {
-                        window.location.href = response.content;
-                    }
-
-                    // ANY response
-                    if (!response.type || (response.type != 'html' && response.type != 'redirect')) {
+                    if (xhr.responseText) {
                         options.reloadScript(response, status, xhr);
                     }
+
+                    // VJAX next
+                    callbacks.forEach(function(callback) {
+                        $(document).trigger('vjax:' + callback.replace(/\s/g, ''));
+                    });
 
                     // complete callback
                     options.complete(response, status, xhr);
                 },
-                complete: function() {}
+                complete: function(response, status, xhr) {}
             });
+        }
+
+        var parseUrl = function( url ) {
+            var a = document.createElement('a');
+            a.href = url;
+            return a;
         }
 
         this.init = function(that) {
@@ -172,7 +221,7 @@
                 var that = $(this);
 
                 var plugin = new Plugin(options);
-
+                
                 plugin.init(that);
             } catch(e) {
                 alert(e + ' at line ' + e.lineNumber);
