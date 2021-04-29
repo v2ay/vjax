@@ -1,6 +1,6 @@
 {
   "name": "vjax",
-  "version": "1.0.19",
+  "version": "2.0.2",
   "description": "V2ay vjax",
   "main": "vjax.js",
   "scripts": {
