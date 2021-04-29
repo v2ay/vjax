@@ -224,7 +224,7 @@
                 
                 plugin.init(that);
             } catch(e) {
-                alert(e + ' at line ' + e.lineNumber);
+                console.log(e + ' at line ' + e.lineNumber);
             }
         });
     };
