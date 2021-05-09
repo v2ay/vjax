@@ -125,56 +125,32 @@
                         if (typeof options.container == "string" || options.container instanceof jQuery) {
                             container = $(options.container);
                         } else {
-                            // Find container
-                            for (var i in options.container) {
-                                var optionContainer = options.container[i];
+                            if (xhr.responseJSON) {
+                                // Find code container
+                                for (var i in options.container) {
+                                    var optionContainer = options.container[i];
 
-                                if (optionContainer.code == response.code) {
-                                    container = $(optionContainer.id);
-                                    containerAppend = optionContainer.append;
+                                    if (optionContainer.code == response.code) {
+                                        container = $(optionContainer.id);
+                                        containerAppend = optionContainer.append;
 
-                                    break;
+                                        break;
+                                    }
                                 }
                             }
                         }
                     }
 
+                    var view = null;
+
+                    if (xhr.responseText) {
+                        view = response;
+                    }
+
                     if (xhr.responseJSON) {
                         // HTML response
-                        if (response.type == 'html' && container) {
-                            var view = response.content;
-
-                            // Container is modal
-                            if (container.is($(options.modal))) {
-                                var context = $(options.modal);
-
-                                if (containerAppend == true) {
-                                    $(context).append(view);
-                                } else {
-                                    $(context).html(view);
-                                }
-
-                                $(context).modal('show');
-
-                                options.reloadScript(response, status, xhr);
-                            }
-
-                            // Container not modal
-                            if (!container.is($(options.modal))) {
-                                var context = $(document);
-
-                                var scroll = $(context).scrollTop();
-
-                                if (containerAppend == true) {
-                                    $(context).find(container).append(view);
-                                } else {
-                                    $(context).find(container).html(view);
-                                }
-
-                                options.reloadScript(response, status, xhr);
-                                
-                                $(context).scrollTop(scroll);
-                            }
+                        if (response.type == 'html') {
+                            view = response.content;
                         }
 
                         // REDIRECT response
@@ -188,8 +164,38 @@
                         }
                     }
 
-                    if (xhr.responseText) {
-                        options.reloadScript(response, status, xhr);
+                    if (container && view) {
+                        // Container is modal
+                        if (container.is($(options.modal))) {
+                            var context = $(options.modal);
+
+                            if (containerAppend == true) {
+                                $(context).append(view);
+                            } else {
+                                $(context).html(view);
+                            }
+
+                            $(context).modal('show');
+
+                            options.reloadScript(response, status, xhr);
+                        }
+
+                        // Container not modal
+                        if (!container.is($(options.modal))) {
+                            var context = $(document);
+
+                            var scroll = $(context).scrollTop();
+
+                            if (containerAppend == true) {
+                                $(context).find(container).append(view);
+                            } else {
+                                $(context).find(container).html(view);
+                            }
+
+                            options.reloadScript(response, status, xhr);
+                            
+                            $(context).scrollTop(scroll);
+                        }
                     }
 
                     // VJAX next
